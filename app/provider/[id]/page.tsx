@@ -314,19 +314,19 @@ export default function ProviderDetailPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       {/* ----- 병원 이미지 ----- */}
-      <div className="relative w-full h-64 rounded-xl overflow-hidden shadow mb-6">
+      <div className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden shadow-md mb-6 border border-gray-100">
         <img
-          src={imageSrc}
+          src={imageSrc} // 위에서 로직으로 처리한 imageSrc가 여기 들어갑니다.
           alt={provider.name}
-          className="w-full h-full object-cover brightness-90"
+          className="w-full h-full object-cover brightness-95"
         />
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70">
-          <h2 className="text-white text-xl font-bold">
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+          <h2 className="text-white text-xl font-bold drop-shadow-md">
             {provider.name}
           </h2>
           <div className="flex items-center gap-1 text-yellow-400 text-sm mt-1">
             <Star size={14} fill="#facc15" />
-            <span>{provider.avg_rating?.toFixed(1) || "0.0"}</span>
+            <span className="font-bold">{provider.avg_rating?.toFixed(1) || "0.0"}</span>
             <span className="text-gray-200">/ 5.0</span>
             <span className="text-gray-300 ml-2 text-xs">
               ({reviews.length}건)
