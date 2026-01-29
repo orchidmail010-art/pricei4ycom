@@ -40,7 +40,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        {/* ⬇️ 여기서부터 삽입 시작 */}
+        <main className="max-w-4xl mx-auto px-4 sm:px-6">
+          {children}
+        </main>
+        {/* ⬆️ 여기까지 삽입 끝 */}
       </body>
     </html>
   );
