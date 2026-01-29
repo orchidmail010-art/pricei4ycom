@@ -5,15 +5,15 @@ import { processReport } from "@/lib/auto/processReport";
 
 import { updateUserTrust } from "@/lib/auto/elvaluateUserTrust";
 
-if (evaluation) {
-  await updateUserTrust(report.user_id, evaluation.success);
+if (evaluate) {
+  await updateUserTrust(report.user_id, evaluate.success);
 }
 
 
 import { updateProviderTrust } from "@/lib/auto/evaluateProviderTrust";
 
-if (evaluation) {
-  await updateProviderTrust(report.provider_id, evaluation.success);
+if (evaluate) {
+  await updateProviderTrust(report.provider_id, evaluate.success);
 }
 
 
