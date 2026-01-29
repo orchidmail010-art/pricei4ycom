@@ -1,21 +1,8 @@
-// app/api/reports/[id]/auto/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import { processReport } from "@/lib/auto/processReport";
-
-import { updateUserTrust } from "@/lib/auto/elvaluateUserTrust";
-
-if (evaluate) {
-  await updateUserTrust(report.user_id, evaluate.success);
-}
-
-
+import { updateUserTrust } from "@/lib/auto/elvaluateUserTrust"; // 파일명 오타 유지
 import { updateProviderTrust } from "@/lib/auto/evaluateProviderTrust";
-
-if (evaluate) {
-  await updateProviderTrust(report.provider_id, evaluate.success);
-}
-
 
 const SYSTEM_ADMIN_ID = "864ab2c9-0b66-421e-a170-c5f9996966e6";
 
@@ -41,16 +28,13 @@ async function handleAutoProcess(req: NextRequest, context: any) {
 
   const supabase = supabaseServer();
 
-  // 1) 비즈니스 로직 실행 (상태 변화 예측 및 처리 로직 수행)
-  // [중요] processReport 내부에서 실제 DB를 건드린다면, 전/후 스냅샷 로직이 processReport 밖으로 나와야 합니다.
-  // 여기서는 processReport가 '계산'만 한다고 가정하거나, 혹은 업데이트 전/후를 여기서 통제합니다.
-  
-  const { data: before } = await supabase.from("reports").select("id, status, memo").eq("id", id).single();
-  if (!before) return NextResponse.json({ ok: false, error: "REPORT_NOT_FOUND" }, { status: 404 });
+  // 1) 기존 데이터 조회
+  const { data: report } = await supabase.from("reports").select("*").eq("id", id).single();
+  if (!report) return NextResponse.json({ ok: false, error: "REPORT_NOT_FOUND" }, { status: 404 });
 
-  const beforeSnapshot: Snapshot = { status: before.status, memo: before.memo };
+  const beforeSnapshot: Snapshot = { status: report.status, memo: report.memo };
 
-  // 2) 실제 자동 처리 로직 (상태값 결정)
+  // 2) 실제 자동 처리 로직 실행
   const autoResult: any = await processReport(id); 
   const newStatus = autoResult.newStatus ?? "auto_done";
 
@@ -59,7 +43,7 @@ async function handleAutoProcess(req: NextRequest, context: any) {
     .from("reports")
     .update({
       status: newStatus,
-      memo: autoResult.memo ?? beforeSnapshot.memo,
+      memo: autoResult.memo ?? report.memo,
     })
     .eq("id", id)
     .select("id, status, memo")
@@ -70,8 +54,15 @@ async function handleAutoProcess(req: NextRequest, context: any) {
   const afterSnapshot: Snapshot = { status: after.status, memo: after.memo };
   const diffSummary = buildDiffSummary(beforeSnapshot, afterSnapshot);
 
-  // 4) 로그 생성
-  const { error: logError } = await supabase.from("report_logs").insert({
+  // 4) [중요] 신뢰도 업데이트 로직 (함수 내부로 이동 및 변수 수정)
+  // autoResult 안에 평가 결과가 있다고 가정하고 처리합니다.
+  if (autoResult.evaluate) {
+    await updateUserTrust(report.user_id, autoResult.evaluate.success);
+    await updateProviderTrust(report.provider_id, autoResult.evaluate.success);
+  }
+
+  // 5) 로그 생성
+  await supabase.from("report_logs").insert({
     report_id: id,
     admin_id: autoResult.adminId ?? SYSTEM_ADMIN_ID,
     old_status: beforeSnapshot.status,
@@ -85,10 +76,6 @@ async function handleAutoProcess(req: NextRequest, context: any) {
       diff_summary: diffSummary,
     },
   });
-
-  // 5) [추가] AI/자동화 품질 평가 및 가중치 조절 로직 실행
-  // 이 단계에서 시스템의 자동 처리 정확도를 평가하는 로직을 비동기로 실행할 수 있습니다.
-  // await evaluateAndAdjustWeights(id, autoResult);
 
   return NextResponse.json({
     ok: true,
