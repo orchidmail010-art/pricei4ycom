@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, Suspense } from "react"; // Suspense 추가
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
@@ -11,7 +11,8 @@ type Provider = {
   name: string;
 };
 
-export default function NewReportPage() {
+// --- 기존 로직과 UI를 담은 내부 컴포넌트 ---
+function NewReportForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -26,25 +27,19 @@ export default function NewReportPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // -----------------------------
-  // 초기 로딩: 로그인 + 병원 목록 + 쿼리 반영
-  // -----------------------------
   useEffect(() => {
     async function init() {
       const supabase = supabaseBrowser();
 
-      // 1) 유저 확인
       const { data: userData } = await supabase.auth.getUser();
       const u = userData?.user || null;
       setUser(u);
 
       if (!u) {
-        // 로그인 안됐으면 로그인 페이지로
         router.push("/login?redirect=/my/reports/new");
         return;
       }
 
-      // 2) 병원 목록
       const { data: providerData } = await supabase
         .from("providers")
         .select("id, name")
@@ -52,7 +47,6 @@ export default function NewReportPage() {
 
       setProviders(providerData || []);
 
-      // 3) 쿼리의 provider_id 반영
       const q = searchParams.get("provider_id");
       if (q) {
         const pid = Number(q);
@@ -72,9 +66,6 @@ export default function NewReportPage() {
 
   const hasPreselectedProvider = !!searchParams.get("provider_id");
 
-  // -----------------------------
-  // 제출 처리
-  // -----------------------------
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
@@ -114,7 +105,6 @@ export default function NewReportPage() {
         return;
       }
 
-      // 성공 시 내 신고 목록으로
       router.push("/my/reports");
     } catch (err) {
       console.error(err);
@@ -123,9 +113,6 @@ export default function NewReportPage() {
     }
   }
 
-  // -----------------------------
-  // UI
-  // -----------------------------
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -148,7 +135,6 @@ export default function NewReportPage() {
         onSubmit={handleSubmit}
         className="space-y-4 bg-white border rounded-lg p-5 shadow-sm"
       >
-        {/* 병원 선택 */}
         <div>
           <label className="block text-sm font-medium mb-1">병원 선택</label>
           <select
@@ -176,7 +162,6 @@ export default function NewReportPage() {
           )}
         </div>
 
-        {/* 신고 유형 */}
         <div>
           <label className="block text-sm font-medium mb-1">신고 유형</label>
           <select
@@ -190,7 +175,6 @@ export default function NewReportPage() {
           </select>
         </div>
 
-        {/* 우선순위 */}
         <div>
           <label className="block text-sm font-medium mb-1">우선순위</label>
           <select
@@ -204,7 +188,6 @@ export default function NewReportPage() {
           </select>
         </div>
 
-        {/* 내용 */}
         <div>
           <label className="block text-sm font-medium mb-1">상세 내용</label>
           <textarea
@@ -215,7 +198,6 @@ export default function NewReportPage() {
           />
         </div>
 
-        {/* 에러 메시지 */}
         {error && (
           <p className="text-sm text-red-500">{error}</p>
         )}
@@ -234,5 +216,14 @@ export default function NewReportPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+// --- 최종 페이지 컴포넌트 ---
+export default function NewReportPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-center">불러오는 중...</div>}>
+      <NewReportForm />
+    </Suspense>
   );
 }

@@ -3,9 +3,10 @@
 export const dynamic = 'force-dynamic';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, Suspense } from 'react'; // Suspense 추가
 
-export default function AdminLoginPage() {
+// --- 1. 실제 로그인 폼 컴포넌트 ---
+function AdminLoginForm() {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState<string|null>(null);
   const router = useRouter();
@@ -49,5 +50,18 @@ export default function AdminLoginPage() {
         {err && <div style={{ color:'red' }}>{err}</div>}
       </form>
     </main>
+  );
+}
+
+// --- 2. 외부로 내보내는 메인 페이지 (Suspense 적용) ---
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={
+      <main style={{ maxWidth: 420, margin: '80px auto', padding: '0 16px', textAlign: 'center' }}>
+        <p>잠시만 기다려 주세요...</p>
+      </main>
+    }>
+      <AdminLoginForm />
+    </Suspense>
   );
 }

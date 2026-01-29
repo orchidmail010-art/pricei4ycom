@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, FormEvent, useCallback } from "react";
+import { useEffect, useState, FormEvent, useCallback, Suspense } from "react"; // Suspense 추가
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
@@ -13,7 +13,8 @@ type Provider = {
 
 const supabase = supabaseBrowser();
 
-export default function NewReportPage() {
+// --- 1. 실제 로직이 담긴 컨텐츠 컴포넌트 ---
+function ReportNewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -57,19 +58,15 @@ export default function NewReportPage() {
     }
   }, [qsProviderId, qsService, qsPrice]);
 
-  // 4. [정리된 로직] 통합 데이터 조회 함수
+  // 4. 통합 데이터 조회 함수
   const fetchReportStats = useCallback(async (pid: number) => {
     setCheckingStats(true);
     const targetCategory = "가격 오류";
 
     try {
-      // Promise.all을 사용하여 병렬로 데이터 조회 (성능 최적화)
       const [dupRes, solvedRes, rateRes] = await Promise.all([
-        // 대기 중인 중복 건
         supabase.from("reports").select("id, created_at").eq("provider_id", pid).eq("category", targetCategory).eq("status", "pending").limit(3),
-        // 해결된 이력
         supabase.from("reports").select("id, updated_at").eq("provider_id", pid).eq("category", targetCategory).in("status", ["auto_done", "completed"]).order("updated_at", { ascending: false }).limit(3),
-        // 자동처리 확률 계산용 최근 50건
         supabase.from("reports").select("status").eq("provider_id", pid).eq("category", targetCategory).limit(50)
       ]);
 
@@ -146,7 +143,6 @@ export default function NewReportPage() {
     <div className="max-w-xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold">가격 신고하기</h1>
 
-      {/* 가이드 영역 */}
       <div className="space-y-3">
         {qsProviderName && (
           <div className="rounded bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-800 font-medium">
@@ -169,7 +165,6 @@ export default function NewReportPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* 입력 영역 */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">병원 선택 *</label>
@@ -199,7 +194,6 @@ export default function NewReportPage() {
           </div>
         </div>
 
-        {/* 실시간 데이터 알림 영역 */}
         <div className="space-y-3 pt-2">
           {checkingStats && <p className="text-xs text-gray-400 animate-pulse">최신 병원 정보를 불러오는 중...</p>}
 
@@ -247,5 +241,14 @@ export default function NewReportPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+// --- 2. 외부에서 사용하는 메인 페이지 컴포넌트 ---
+export default function NewReportPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-gray-400">데이터를 불러오는 중입니다...</div>}>
+      <ReportNewContent />
+    </Suspense>
   );
 }
