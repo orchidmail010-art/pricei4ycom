@@ -208,8 +208,9 @@ function ResultsContent() {
           </table>
         </div>
       )}
-      <AdSense />
+      
       <div style={{ marginTop: 12, color: '#6b7280', fontSize: 12 }}>* 서비스 드롭다운은 현재 불러온 데이터(items)에서 자동 추출됩니다.</div>
+      <AdSense />
     </div>
   );
 }
