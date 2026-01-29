@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function updateUserTrust(
   userId: string,

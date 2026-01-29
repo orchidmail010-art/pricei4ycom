@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function adjustAutoWeights(success: boolean) {
   const supabase = supabaseAdmin();

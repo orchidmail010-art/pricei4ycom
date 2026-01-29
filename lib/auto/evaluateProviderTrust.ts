@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function updateProviderTrust(providerId: number, success: boolean) {
   const supabase = supabaseAdmin();

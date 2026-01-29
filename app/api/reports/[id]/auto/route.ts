@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import { processReport } from "@/lib/auto/processReport";
 
-import { updateUserTrust } from "@/lib/auto/evaluateUserTrust";
+import { updateUserTrust } from "@/lib/auto/elvaluateUserTrust";
 
 if (evaluation) {
   await updateUserTrust(report.user_id, evaluation.success);
