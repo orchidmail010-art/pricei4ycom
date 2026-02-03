@@ -44,6 +44,7 @@ export default function RootLayout({
           </div>
         </header>
 
+
         {/* 모든 페이지 콘텐츠가 이 800px 박스 안에 담깁니다 */}
         <main style={{ maxWidth: '800px', margin: '0 auto', padding: '0 10px 40px' }}>
           {children}

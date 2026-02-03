@@ -67,6 +67,7 @@ body {
   100% { background-color: #ecfdf3; }
 }
 
+
 .animate-autoHighlight {
   animation: autoHighlight 1s ease-out 1;
 }

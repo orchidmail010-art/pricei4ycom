@@ -135,6 +135,7 @@ function ResultsContent() {
         </div>
       </div>
 
+
       {/* 결과 테이블 카드 영역 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <table className="w-full table-fixed border-collapse">

@@ -277,6 +277,7 @@ export default function ProviderDetailPage() {
               ))}
             </div>
             
+            
             {filteredReviews.length > visibleCount && <div ref={loadMoreRef} className="py-10 text-center text-gray-400 text-sm font-medium">후기를 더 불러오고 있습니다...</div>}
           </div>
         )}
