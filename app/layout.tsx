@@ -37,14 +37,17 @@ export default function RootLayout({
         />
       </head>
 
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* ⬇️ 여기서부터 삽입 시작 */}
-       
+      <body>
+        <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', marginBottom: '20px' }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto', padding: '15px 10px' }}>
+             <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#16a34a' }}>비급여 가격비교</h1>
+          </div>
+        </header>
+
+        {/* 모든 페이지 콘텐츠가 이 800px 박스 안에 담깁니다 */}
+        <main style={{ maxWidth: '800px', margin: '0 auto', padding: '0 10px 40px' }}>
           {children}
-        
-        {/* ⬆️ 여기까지 삽입 끝 */}
+        </main>
       </body>
     </html>
   );
