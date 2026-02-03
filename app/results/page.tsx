@@ -78,7 +78,7 @@ function ResultsContent() {
     router.push(`/results?${params.toString()}`);
   };
 
-  // ✅ [수정 포인트] 지역 변경 시 즉시 데이터를 불러오는 함수 (정확한 위치)
+  // ✅ [수정] 지역 변경 시 즉시 데이터를 불러오는 함수 (JS 영역의 올바른 위치)
   const handleRegionChange = async (newRegion: string) => {
     setRegion(newRegion);
     const params = new URLSearchParams(sp.toString());
@@ -106,30 +106,35 @@ function ResultsContent() {
       
       <div className="mb-4"><AdSense /></div>
 
-      <div className="bg-white rounded-xl shadow-sm p-5 mb-5 border border-gray-200">
-        <div className="grid grid-cols-[120px_1fr_auto] gap-3 mb-3">
-          <select 
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500"
-            value={region} 
-            onChange={(e) => handleRegionChange(e.target.value)} // ✅ 함수 연결
-          >
-            <option value="전체">전체 지역</option>
-            <option value="서울">서울</option>
-            <option value="인천">인천</option>
-            <option value="경기">경기</option>
-          </select>
-          <select 
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500"
-            value={service} 
-            onChange={(e) => setService(e.target.value)}
-          >
-            {serviceOptions.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <button onClick={handleSearch} className="btn bg-green-600 text-white hover:bg-green-700 font-bold px-6 rounded-lg">
+      {/* 필터 카드 영역 */}
+      <div className="bg-white rounded-xl shadow-sm p-5 mb-5 border border-gray-200 animate-fadeIn">
+        {/* 상단: 지역/서비스/검색 - 모바일 대응 레이아웃 */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-3">
+          <div className="flex gap-2 flex-1">
+            <select 
+              className="w-1/3 sm:w-[120px] border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500"
+              value={region} 
+              onChange={(e) => handleRegionChange(e.target.value)}
+            >
+              <option value="전체">전체 지역</option>
+              <option value="서울">서울</option>
+              <option value="인천">인천</option>
+              <option value="경기">경기</option>
+            </select>
+            <select 
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500"
+              value={service} 
+              onChange={(e) => setService(e.target.value)}
+            >
+              {serviceOptions.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <button onClick={handleSearch} className="btn bg-green-600 text-white hover:bg-green-700 font-bold px-6 py-2 sm:py-0 rounded-lg">
             검색
           </button>
         </div>
 
+        {/* 하단: 가격 필터 - 모바일에서 삐져나가지 않게 수정 */}
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex gap-2 flex-1 w-full">
             <input 
@@ -156,23 +161,23 @@ function ResultsContent() {
         </div>
       </div>
 
+      {/* 결과 테이블 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full table-fixed border-collapse">
+        <table className="w-full table-fixed border-collapse text-left">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="w-[25%] py-3 px-3 text-left text-xs font-bold text-gray-500">병원</th>
-              <th className="w-[12%] py-3 px-2 text-left text-xs font-bold text-gray-500">지역</th>
-              <th className="w-[15%] py-3 px-2 text-left text-xs font-bold text-gray-500">서비스</th>
-              <th className="w-[18%] py-3 px-2 text-right text-xs font-bold text-gray-500">가격</th>
-              <th className="w-[20%] py-3 px-2 text-left text-xs font-bold text-gray-500">비고</th>
+              <th className="w-[30%] py-3 px-3 text-xs font-bold text-gray-500">병원</th>
+              <th className="w-[15%] py-3 px-2 text-xs font-bold text-gray-500">지역</th>
+              <th className="w-[15%] py-3 px-2 text-xs font-bold text-gray-500">서비스</th>
+              <th className="w-[20%] py-3 px-2 text-right text-xs font-bold text-gray-500">가격</th>
               <th className="w-[10%] py-3 px-2 text-center text-xs font-bold text-gray-500">출처</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading ? (
-              <tr><td colSpan={6} className="py-20 text-center text-gray-400">데이터를 불러오는 중...</td></tr>
+              <tr><td colSpan={5} className="py-20 text-center text-gray-400">데이터 로딩 중...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} className="py-20 text-center text-gray-400">검색 결과가 없습니다.</td></tr>
+              <tr><td colSpan={5} className="py-20 text-center text-gray-400">검색 결과가 없습니다.</td></tr>
             ) : (
               filtered.map((it) => (
                 <tr key={it.id} className="hover:bg-green-50/30 transition-colors">
@@ -184,7 +189,6 @@ function ResultsContent() {
                   <td className="py-4 px-2 text-sm font-black text-right text-gray-900">
                     {it.price?.toLocaleString()}원
                   </td>
-                  <td className="py-4 px-2 text-xs text-gray-400 truncate">{it.note || '-'}</td>
                   <td className="py-4 px-2 text-center">
                     {it.source_url ? (
                       <a href={it.source_url} target="_blank" className="text-blue-500 hover:underline text-xs font-bold">공식</a>
